@@ -19,6 +19,39 @@ impl Config {
 
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let text = fs::read_to_string(config.file_path)?;
-    print!("{text}");
+    let lines = search(&config.query, &text);
+    if lines.len() < 1 {
+        println!("[...] Not found.");
+    } else {
+        for line in lines {
+            println!("{line}");
+        }
+    }
     Ok(())
+}
+
+fn search<'a>(query: &str, text: &'a str) -> Vec<&'a str> {
+    let mut result = Vec::new();
+    for line in text.lines() {
+        if line.contains(query) {
+            result.push(line);
+        }
+    }
+    return result;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn one_result() {
+        let query = "safe";
+        let contents = "\
+Rust:
+safe, fast, productive.
+Pick three.";
+
+        assert_eq!(vec!["safe, fast, productive."], search(query, contents));
+    }
 }
